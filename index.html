@@ -37,11 +37,21 @@
             <h2 style="margin-top: 3rem;">LZ78 Decoder</h2>
             <div id="lz78-decoder"></div>
         </section>
+
+        <!-- Arithmetic Section -->
+        <section class="visualizer-section lz-card">
+            <h2>Arithmetic Encoder Visualizer</h2>
+            <div id="arith-visualizer"></div>
+            
+            <h2 style="margin-top: 3rem;">Arithmetic Decoder</h2>
+            <div id="arith-decoder"></div>
+        </section>
     </main>
 
     <!-- Drop the scripts here -->
     <script src="lz77.js"></script>
     <script src="lz78.js"></script>
+    <script src="arithmetic.js"></script>
     
     <script>
         // Initialize the visualizers when DOM is loaded
@@ -56,6 +66,10 @@
             const lz78Vis = new LZ78Visualizer('lz78-visualizer');
             const lz78Dec = new LZ78DecoderVisualizer('lz78-decoder');
             lz78Vis.onTokensUpdate = (tokens) => lz78Dec.setTokens(tokens);
+
+            const arithVis = new ArithmeticVisualizer('arith-visualizer');
+            const arithDec = new ArithmeticDecoderVisualizer('arith-decoder');
+            arithVis.onFinish = (floatVal, len, freqs) => arithDec.setTokens(floatVal, len, freqs);
         });
     </script>
 </body>

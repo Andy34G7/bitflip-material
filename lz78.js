@@ -46,7 +46,8 @@ class LZ78Visualizer {
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;">Idx</th>
-                                        <th>Content</th>
+                                        <th>Tuple</th>
+                                        <th>String</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -243,8 +244,10 @@ class LZ78Visualizer {
             if (highlightInfo && i === highlightInfo.justAddedIndex) {
                 tr.classList.add('new-entry');
             }
+            let tupleDisplay = i === 0 ? '<i>n/a</i>' : `(${this.nodes[i].parentId}, '${this.nodes[i].char === '' ? '' : this.nodes[i].char}')`;
             tr.innerHTML = `
                 <td>${i}</td>
+                <td>${tupleDisplay}</td>
                 <td>${i === 0 ? '<i>&lt;empty&gt;</i>' : this.dictionary[i]}</td>
             `;
             this.dictTbody.appendChild(tr);
@@ -391,7 +394,8 @@ class LZ78DecoderVisualizer {
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;">Idx</th>
-                                        <th>Content</th>
+                                        <th>Tuple</th>
+                                        <th>String</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -442,6 +446,7 @@ class LZ78DecoderVisualizer {
         this.currentTokenIndex = 0;
         this.reconstructedString = "";
         this.dictionary = [''];
+        this.dictTuples = [{parent: 0, char: ''}];
         this.btnStep.disabled = false;
         if (this.inputTokens.length === 0) this.btnStep.disabled = true;
         this.renderState();
@@ -487,6 +492,7 @@ class LZ78DecoderVisualizer {
         // Update dict
         let addedIdx = this.dictionary.length;
         this.dictionary.push(newEntry);
+        this.dictTuples.push({parent: t.index, char: t.char});
         
         this.currentTokenIndex++;
         
@@ -545,8 +551,10 @@ class LZ78DecoderVisualizer {
             if (highlightInfo && i === highlightInfo.addedIdx) {
                 tr.classList.add('new-entry');
             }
+            let tupleDisplay = i === 0 ? '<i>n/a</i>' : `(${this.dictTuples[i].parent}, '${this.dictTuples[i].char === '' ? '' : this.dictTuples[i].char}')`;
             tr.innerHTML = `
                 <td>${i}</td>
+                <td>${tupleDisplay}</td>
                 <td>${i === 0 ? '<i>&lt;empty&gt;</i>' : this.dictionary[i]}</td>
             `;
             this.dictTbody.appendChild(tr);

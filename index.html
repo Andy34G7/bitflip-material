@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LZ77 & LZ78 Static Visualizer</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Link our new custom CSS -->
+    <link rel="stylesheet" href="styles-lz.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>Compression Visualizers</h1>
+        <p>Interactive, step-by-step algorithms.</p>
+    </header>
+
+    <main class="container">
+        <!-- LZ77 Section -->
+        <section class="visualizer-section lz-card">
+            <h2>LZ77 Encoder Visualizer</h2>
+            <div id="lz77-visualizer"></div>
+            
+            <h2 style="margin-top: 3rem;">LZ77 Decoder</h2>
+            <div id="lz77-decoder"></div>
+        </section>
+
+        <!-- LZ78 Section -->
+        <section class="visualizer-section lz-card">
+            <h2>LZ78 Encoder Visualizer</h2>
+            <div id="lz78-visualizer"></div>
+            
+            <h2 style="margin-top: 3rem;">LZ78 Decoder</h2>
+            <div id="lz78-decoder"></div>
+        </section>
+    </main>
+
+    <!-- Drop the scripts here -->
+    <script src="lz77.js"></script>
+    <script src="lz78.js"></script>
+    
+    <script>
+        // Initialize the visualizers when DOM is loaded
+        document.addEventListener("DOMContentLoaded", () => {
+            const lz77Vis = new LZ77Visualizer('lz77-visualizer', { 
+                searchBufferSize: 8, 
+                lookaheadBufferSize: 4 
+            });
+            const lz77Dec = new LZ77DecoderVisualizer('lz77-decoder');
+            lz77Vis.onTokensUpdate = (tokens) => lz77Dec.setTokens(tokens);
+
+            const lz78Vis = new LZ78Visualizer('lz78-visualizer');
+            const lz78Dec = new LZ78DecoderVisualizer('lz78-decoder');
+            lz78Vis.onTokensUpdate = (tokens) => lz78Dec.setTokens(tokens);
+        });
+    </script>
+</body>
+</html>

@@ -46,12 +46,19 @@
             <h2 style="margin-top: 3rem;">Arithmetic Decoder</h2>
             <div id="arith-decoder"></div>
         </section>
+
+        <!-- Reed-Solomon Section -->
+        <section class="visualizer-section lz-card">
+            <h2>Reed-Solomon Encoder (Error Correction)</h2>
+            <div id="rs-visualizer"></div>
+        </section>
     </main>
 
     <!-- Drop the scripts here -->
     <script src="lz77.js"></script>
     <script src="lz78.js"></script>
     <script src="arithmetic.js"></script>
+    <script src="reed-solomon.js"></script>
     
     <script>
         // Initialize the visualizers when DOM is loaded
@@ -70,6 +77,8 @@
             const arithVis = new ArithmeticVisualizer('arith-visualizer');
             const arithDec = new ArithmeticDecoderVisualizer('arith-decoder');
             arithVis.onFinish = (floatVal, len, freqs) => arithDec.setTokens(floatVal, len, freqs);
+
+            const rsVis = new ReedSolomonEncoderVisualizer('rs-visualizer');
         });
     </script>
 </body>

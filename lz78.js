@@ -31,6 +31,7 @@ class LZ78Visualizer {
             </div>
             <div class="controls-bar" style="margin-bottom: 2rem;">
                 <button class="btn" id="lz78-btn-reset">Reset</button>
+                <button class="btn" id="lz78-btn-prev" disabled>Previous</button>
                 <button class="btn" id="lz78-btn-step">Step</button>
                 <button class="btn btn-secondary" id="lz78-btn-auto">Auto Play</button>
             </div>
@@ -78,6 +79,7 @@ class LZ78Visualizer {
 
         this.inputEl = this.container.querySelector('#lz78-input');
         this.btnReset = this.container.querySelector('#lz78-btn-reset');
+        this.btnPrev = this.container.querySelector('#lz78-btn-prev');
         this.btnStep = this.container.querySelector('#lz78-btn-step');
         this.btnAuto = this.container.querySelector('#lz78-btn-auto');
     }
@@ -87,6 +89,7 @@ class LZ78Visualizer {
             this.inputString = this.inputEl.value;
             this.reset();
         });
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
         this.inputEl.addEventListener('change', (e) => {
@@ -114,11 +117,29 @@ class LZ78Visualizer {
         this.tokens = [];
         this.nodes = { 0: new LZ78TrieNode(0, 'root') };
         
+        this.history = [];
+        this.btnPrev.disabled = true;
+
         this.btnStep.disabled = false;
         if(this.inputString.length === 0) this.btnStep.disabled = true;
         
         this.renderState();
         if(this.onTokensUpdate) this.onTokensUpdate([]);
+    }
+
+    previous() {
+        if (this.history.length === 0) return;
+        let state = this.history.pop();
+        this.currentIndex = state.currentIndex;
+        this.tokens = state.tokens;
+        this.dictionary = state.dictionary;
+        this.nodes = state.nodes;
+        
+        this.btnStep.disabled = false;
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        
+        this.renderState();
+        if(this.onTokensUpdate) this.onTokensUpdate(this.tokens);
     }
 
     toggleAutoStep() {
@@ -148,6 +169,14 @@ class LZ78Visualizer {
 
     step() {
         if (this.currentIndex >= this.inputString.length) return;
+
+        this.history.push({
+            currentIndex: this.currentIndex,
+            tokens: JSON.parse(JSON.stringify(this.tokens)),
+            dictionary: JSON.parse(JSON.stringify(this.dictionary)),
+            nodes: JSON.parse(JSON.stringify(this.nodes))
+        });
+        this.btnPrev.disabled = false;
 
         let currentNodeId = 0;
         let matchLen = 0;
@@ -375,6 +404,7 @@ class LZ78DecoderVisualizer {
                 </div>
                 <div style="display:flex; gap:1rem;">
                     <button class="btn" id="lz78-dec-btn-reset">Reset</button>
+                    <button class="btn" id="lz78-dec-btn-prev" disabled>Previous</button>
                     <button class="btn" id="lz78-dec-btn-step">Step Decoder</button>
                     <button class="btn btn-secondary" id="lz78-dec-btn-auto">Auto Decode</button>
                 </div>
@@ -415,12 +445,14 @@ class LZ78DecoderVisualizer {
         this.dictTbody = this.container.querySelector('#lz78-dec-dict-table tbody');
         
         this.btnReset = this.container.querySelector('#lz78-dec-btn-reset');
+        this.btnPrev = this.container.querySelector('#lz78-dec-btn-prev');
         this.btnStep = this.container.querySelector('#lz78-dec-btn-step');
         this.btnAuto = this.container.querySelector('#lz78-dec-btn-auto');
     }
 
     setupEventListeners() {
         this.btnReset.addEventListener('click', () => this.reset());
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
 
@@ -447,8 +479,26 @@ class LZ78DecoderVisualizer {
         this.reconstructedString = "";
         this.dictionary = [''];
         this.dictTuples = [{parent: 0, char: ''}];
+        
+        this.history = [];
+        this.btnPrev.disabled = true;
+
         this.btnStep.disabled = false;
         if (this.inputTokens.length === 0) this.btnStep.disabled = true;
+        this.renderState();
+    }
+
+    previous() {
+        if (this.history.length === 0) return;
+        let state = this.history.pop();
+        this.currentTokenIndex = state.currentTokenIndex;
+        this.reconstructedString = state.reconstructedString;
+        this.dictionary = state.dictionary;
+        this.dictTuples = state.dictTuples;
+        
+        this.btnStep.disabled = false;
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        
         this.renderState();
     }
 
@@ -480,6 +530,14 @@ class LZ78DecoderVisualizer {
     step() {
         if (this.currentTokenIndex >= this.inputTokens.length) return;
         
+        this.history.push({
+            currentTokenIndex: this.currentTokenIndex,
+            reconstructedString: this.reconstructedString,
+            dictionary: JSON.parse(JSON.stringify(this.dictionary)),
+            dictTuples: JSON.parse(JSON.stringify(this.dictTuples))
+        });
+        this.btnPrev.disabled = false;
+
         let t = this.inputTokens[this.currentTokenIndex];
         
         // Reconstruct entry

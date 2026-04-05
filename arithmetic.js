@@ -30,6 +30,7 @@ class ArithmeticVisualizer {
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <button class="btn" id="arith-btn-reset">Reset</button>
+                    <button class="btn" id="arith-btn-prev" disabled>Previous</button>
                     <button class="btn" id="arith-btn-step">Step</button>
                     <button class="btn btn-secondary" id="arith-btn-auto">Auto Play</button>
                 </div>
@@ -76,6 +77,7 @@ class ArithmeticVisualizer {
 
         this.inputEl = this.container.querySelector('#arith-input');
         this.btnReset = this.container.querySelector('#arith-btn-reset');
+        this.btnPrev = this.container.querySelector('#arith-btn-prev');
         this.btnStep = this.container.querySelector('#arith-btn-step');
         this.btnAuto = this.container.querySelector('#arith-btn-auto');
     }
@@ -85,6 +87,7 @@ class ArithmeticVisualizer {
             this.inputString = this.inputEl.value;
             this.reset();
         });
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
         this.inputEl.addEventListener('change', (e) => {
@@ -116,8 +119,10 @@ class ArithmeticVisualizer {
         this.currentIndex = 0;
         this.currentLow = 0;
         this.currentHigh = 1;
-        this.levels = []; // Array of tracking data for drawing levels
+        this.levels = [];
         this.outputView.innerHTML = '';
+        this.history = [];
+        this.btnPrev.disabled = true;
         
         this.buildFreqTable();
 
@@ -163,6 +168,15 @@ class ArithmeticVisualizer {
 
     step() {
         if (this.currentIndex >= this.inputString.length) return;
+        
+        this.history.push({
+            currentIndex: this.currentIndex,
+            currentLow: this.currentLow,
+            currentHigh: this.currentHigh,
+            levels: JSON.parse(JSON.stringify(this.levels)),
+            outputHTML: this.outputView.innerHTML
+        });
+        this.btnPrev.disabled = false;
 
         let ch = this.inputString[this.currentIndex];
         let symData = this.freqTable[ch];
@@ -192,6 +206,22 @@ class ArithmeticVisualizer {
             
             if(this.onFinish) this.onFinish(encodedVal, this.inputString.length, this.freqTable);
         }
+    }
+    
+    previous() {
+        if (this.history.length === 0) return;
+        let state = this.history.pop();
+        
+        this.currentIndex = state.currentIndex;
+        this.currentLow = state.currentLow;
+        this.currentHigh = state.currentHigh;
+        this.levels = state.levels;
+        this.outputView.innerHTML = state.outputHTML;
+        
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        this.btnStep.disabled = false;
+        if(this.onFinish) this.onFinish(null, this.inputString.length, this.freqTable);
+        this.renderState();
     }
 
     renderState() {
@@ -405,6 +435,7 @@ class ArithmeticDecoderVisualizer {
                 </div>
                 <div style="display:flex; gap:1rem;">
                     <button class="btn" id="arith-dec-btn-reset">Reset</button>
+                    <button class="btn" id="arith-dec-btn-prev" disabled>Previous</button>
                     <button class="btn" id="arith-dec-btn-step">Step Decoder</button>
                     <button class="btn btn-secondary" id="arith-dec-btn-auto">Auto Decode</button>
                 </div>
@@ -442,12 +473,14 @@ class ArithmeticDecoderVisualizer {
         this.mathLog = this.container.querySelector('#arith-dec-math-log');
         
         this.btnReset = this.container.querySelector('#arith-dec-btn-reset');
+        this.btnPrev = this.container.querySelector('#arith-dec-btn-prev');
         this.btnStep = this.container.querySelector('#arith-dec-btn-step');
         this.btnAuto = this.container.querySelector('#arith-dec-btn-auto');
     }
 
     setupEventListeners() {
         this.btnReset.addEventListener('click', () => this.reset());
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
     }
@@ -457,6 +490,9 @@ class ArithmeticDecoderVisualizer {
         this.reconstructedString = "";
         this.currentStep = 0;
         this.currentValue = this.encodedValue;
+        
+        this.history = [];
+        this.btnPrev.disabled = true;
         
         this.btnStep.disabled = false;
         if (this.encodedValue === null || this.targetLength === 0) {
@@ -510,6 +546,14 @@ class ArithmeticDecoderVisualizer {
     step() {
         if (this.currentStep >= this.targetLength) return;
         
+        this.history.push({
+            currentStep: this.currentStep,
+            currentValue: this.currentValue,
+            reconstructedString: this.reconstructedString,
+            mathLogHTML: this.mathLog.innerHTML
+        });
+        this.btnPrev.disabled = false;
+        
         let foundChar = null;
         let foundData = null;
         
@@ -550,6 +594,20 @@ class ArithmeticDecoderVisualizer {
             this.stopAutoStep();
             this.logMath(`<strong>Decoding complete. stringLength reached.</strong>`);
         }
+    }
+    
+    previous() {
+        if (this.history.length === 0) return;
+        let state = this.history.pop();
+        
+        this.currentStep = state.currentStep;
+        this.currentValue = state.currentValue;
+        this.reconstructedString = state.reconstructedString;
+        this.mathLog.innerHTML = state.mathLogHTML;
+        
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        this.btnStep.disabled = false;
+        this.renderState();
     }
 
     renderState(highlightInfo = null) {

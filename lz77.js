@@ -6,6 +6,8 @@ class LZ77Visualizer {
         this.inputString = options.initialText || "abracadabradabracadabra";
         this.currentIndex = 0;
         this.tokens = [];
+        this.isAnimating = false;
+        this.history = [];
         this.autoStepInterval = null;
         this.lzssMode = false;
         this.onTokensUpdate = null; // callback to feed decoder
@@ -30,6 +32,7 @@ class LZ77Visualizer {
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <button class="btn" id="lz77-btn-reset">Reset</button>
+                    <button class="btn" id="lz77-btn-prev" disabled>Previous</button>
                     <button class="btn" id="lz77-btn-step">Step</button>
                     <button class="btn btn-secondary" id="lz77-btn-auto">Auto Play</button>
                 </div>
@@ -54,6 +57,7 @@ class LZ77Visualizer {
         this.outputView = this.container.querySelector('#lz77-output');
         this.inputEl = this.container.querySelector('#lz77-input');
         this.btnReset = this.container.querySelector('#lz77-btn-reset');
+        this.btnPrev = this.container.querySelector('#lz77-btn-prev');
         this.btnStep = this.container.querySelector('#lz77-btn-step');
         this.btnAuto = this.container.querySelector('#lz77-btn-auto');
         this.searchSizeEl = this.container.querySelector('#lz77-search-size');
@@ -66,6 +70,7 @@ class LZ77Visualizer {
             this.inputString = this.inputEl.value;
             this.reset();
         });
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
         this.inputEl.addEventListener('change', (e) => {
@@ -90,6 +95,8 @@ class LZ77Visualizer {
         this.stopAutoStep();
         this.currentIndex = 0;
         this.tokens = [];
+        this.history = [];
+        this.btnPrev.disabled = true;
         this.btnStep.disabled = false;
         if (this.inputString.length === 0) this.btnStep.disabled = true;
         this.renderState();
@@ -122,7 +129,13 @@ class LZ77Visualizer {
     }
 
     step() {
-        if (this.currentIndex >= this.inputString.length) return;
+        if (this.currentIndex >= this.inputString.length || this.isAnimating) return;
+
+        this.history.push({
+            currentIndex: this.currentIndex,
+            tokens: JSON.parse(JSON.stringify(this.tokens))
+        });
+        this.btnPrev.disabled = false;
 
         let bestOffset = 0;
         let bestLength = 0;
@@ -133,7 +146,6 @@ class LZ77Visualizer {
         
         for (let i = 0; i < searchBuffer.length; i++) {
             let length = 0;
-            // LZ77 allows length to exceed buffer if repeating pattern from search buffer
             while(
                 (this.currentIndex + length) < this.inputString.length &&
                 ((this.lzssMode) ? length < this.lookaheadBufferSize : length < this.lookaheadBufferSize - 1) &&
@@ -151,14 +163,14 @@ class LZ77Visualizer {
         let token = null;
 
         if (this.lzssMode) {
-            if (bestLength > 1) { // 2 or more characters -> worth compressing
+            if (bestLength > 1) {
                 token = { mode: 'lzss', type: 'pointer', offset: bestOffset, length: bestLength };
                 consumedLength = bestLength;
             } else {
                 let char = this.inputString[this.currentIndex];
                 token = { mode: 'lzss', type: 'literal', char: char };
-                bestLength = 1; // for highlighting
-                bestOffset = 0; // no match highlight
+                bestLength = 1;
+                bestOffset = 0;
                 consumedLength = 1;
             }
         } else {
@@ -187,6 +199,19 @@ class LZ77Visualizer {
             this.btnStep.disabled = true;
             this.stopAutoStep();
         }
+    }
+    
+    previous() {
+        if (this.history.length === 0 || this.isAnimating) return;
+        let state = this.history.pop();
+        
+        this.currentIndex = state.currentIndex;
+        this.tokens = state.tokens;
+        
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        this.btnStep.disabled = false;
+        if(this.onTokensUpdate) this.onTokensUpdate(this.tokens);
+        this.renderState();
     }
 
     renderState(highlightInfo = null) {
@@ -244,6 +269,8 @@ class LZ77DecoderVisualizer {
         this.currentTokenIndex = 0;
         this.reconstructedString = "";
         this.autoStepInterval = null;
+        this.isAnimating = false;
+        this.history = [];
 
         this.renderShell();
         this.setupEventListeners();
@@ -268,6 +295,7 @@ class LZ77DecoderVisualizer {
                 </div>
                 <div style="display:flex; gap:1rem;">
                     <button class="btn" id="lz77-dec-btn-reset">Reset</button>
+                    <button class="btn" id="lz77-dec-btn-prev" disabled>Previous</button>
                     <button class="btn" id="lz77-dec-btn-step">Step Decoder</button>
                     <button class="btn btn-secondary" id="lz77-dec-btn-auto">Auto Decode</button>
                 </div>
@@ -289,12 +317,14 @@ class LZ77DecoderVisualizer {
         this.tokensView = this.container.querySelector('#lz77-dec-tokens');
         this.stringView = this.container.querySelector('#lz77-dec-string-view');
         this.btnReset = this.container.querySelector('#lz77-dec-btn-reset');
+        this.btnPrev = this.container.querySelector('#lz77-dec-btn-prev');
         this.btnStep = this.container.querySelector('#lz77-dec-btn-step');
         this.btnAuto = this.container.querySelector('#lz77-dec-btn-auto');
     }
 
     setupEventListeners() {
         this.btnReset.addEventListener('click', () => this.reset());
+        this.btnPrev.addEventListener('click', () => this.previous());
         this.btnStep.addEventListener('click', () => this.step());
         this.btnAuto.addEventListener('click', () => this.toggleAutoStep());
 
@@ -314,8 +344,6 @@ class LZ77DecoderVisualizer {
                     let l = parseInt(match[2]);
                     let c = match[3] === undefined ? '' : match[3];
                     if (c === '' && this.customInput.value.indexOf(match[0]) > -1) {
-                        // might legitimately be missing char or empty char.
-                        // if length matches standard lz77 string "<o,l,>" vs "<o,l>"
                         if (match[0].includes(',>')) {
                             parsedTokens.push({ mode: 'lz77', offset: o, length: l, char: '' });
                         } else if (match[0].split(',').length === 2) {
@@ -336,6 +364,9 @@ class LZ77DecoderVisualizer {
         this.stopAutoStep();
         this.currentTokenIndex = 0;
         this.reconstructedString = "";
+        this.isAnimating = false;
+        this.history = [];
+        this.btnPrev.disabled = true;
         this.btnStep.disabled = false;
         if (this.inputTokens.length === 0) this.btnStep.disabled = true;
         this.renderState();
@@ -367,15 +398,19 @@ class LZ77DecoderVisualizer {
     }
 
     async step() {
-        if (this.isAnimating) return;
-        if (this.currentTokenIndex >= this.inputTokens.length) return;
+        if (this.currentTokenIndex >= this.inputTokens.length || this.isAnimating) return;
         
+        this.history.push({
+            currentTokenIndex: this.currentTokenIndex,
+            reconstructedString: this.reconstructedString
+        });
+        this.btnPrev.disabled = false;
+
         this.isAnimating = true;
         this.btnStep.disabled = true;
 
         let t = this.inputTokens[this.currentTokenIndex];
         
-        // Re-render to show active token highlight immediately
         this.renderState();
 
         let appended = "";
@@ -384,7 +419,6 @@ class LZ77DecoderVisualizer {
         
         if (needsScan) {
             let speed = this.autoStepInterval ? 100 : 250;
-            // Animate scanning backwards
             for (let i = 0; i <= t.offset; i++) {
                 let startOut = this.reconstructedString.length - i;
                 this.renderState({ scanStart: startOut, scanLength: t.length });
@@ -429,6 +463,18 @@ class LZ77DecoderVisualizer {
         } else {
             this.btnStep.disabled = false;
         }
+    }
+    
+    previous() {
+        if (this.history.length === 0 || this.isAnimating) return;
+        let state = this.history.pop();
+        
+        this.currentTokenIndex = state.currentTokenIndex;
+        this.reconstructedString = state.reconstructedString;
+        
+        if (this.history.length === 0) this.btnPrev.disabled = true;
+        this.btnStep.disabled = false;
+        this.renderState();
     }
 
     renderState(highlightInfo = null) {

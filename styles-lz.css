@@ -342,3 +342,39 @@ table.dict-table tr.new-entry {
     0% { background: rgba(16, 185, 129, 0.3); }
     100% { background: transparent; }
 }
+
+.leaderboard-meta {
+    margin: 0.4rem 0;
+    color: var(--text-secondary);
+}
+
+.leaderboard-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.leaderboard-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: top;
+}
+
+.leaderboard-table th {
+    color: var(--text-secondary);
+    font-weight: 700;
+}

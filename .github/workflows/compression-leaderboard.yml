@@ -1,0 +1,47 @@
+name: compression-leaderboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  build-leaderboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Benchmark repository submissions
+        run: |
+          python scripts/run_benchmarks.py \
+            --submissions submissions.json \
+            --out docs/leaderboard.json \
+            --mirror-root leaderboard.json
+
+      - name: Commit leaderboard updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain leaderboard.json docs/leaderboard.json)" ]; then
+            git add leaderboard.json docs/leaderboard.json
+            git commit -m "chore: update compression leaderboard"
+            git push
+          else
+            echo "No leaderboard changes to commit."
+          fi

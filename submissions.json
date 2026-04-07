@@ -1,0 +1,16 @@
+[
+  {
+    "name": "example-alice",
+    "repo": "https://github.com/example/alice-compressor",
+    "branch": "main",
+    "module": "compressor.py",
+    "class": "Compressor"
+  },
+  {
+    "name": "example-bob",
+    "repo": "https://github.com/example/bob-compressor",
+    "branch": "main",
+    "module": "compressor.py",
+    "class": "Compressor"
+  }
+]

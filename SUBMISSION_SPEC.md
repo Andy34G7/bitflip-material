@@ -17,7 +17,7 @@ Each submitted repository must expose one class with this API:
 
 ## Recommended Scaffold
 
-Copy this file from teacher repo:
+Copy this file from this repo:
 
 - `templates/compressor_template.py`
 

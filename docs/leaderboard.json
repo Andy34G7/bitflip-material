@@ -1,6 +1,29 @@
 {
-  "generated_at": null,
-  "metric": "lower avg_ratio is better",
-  "datasets": [],
-  "leaderboard": []
+  "generated_at": "2026-04-30T08:13:22.945433+00:00",
+  "metric": "lower avg_ratio is better; avg_runtime_ms is tie-breaker",
+  "datasets": [
+    "small_repetitive",
+    "text_mixed",
+    "json_like"
+  ],
+  "leaderboard": [
+    {
+      "name": "example-alice",
+      "status": "error",
+      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/alice-compressor', '/tmp/submission-repo-kcmxdqh_/repo']' returned non-zero exit status 128.",
+      "avg_ratio": null,
+      "avg_runtime_ms": null,
+      "results": [],
+      "rank": null
+    },
+    {
+      "name": "example-bob",
+      "status": "error",
+      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/bob-compressor', '/tmp/submission-repo-leh2g35k/repo']' returned non-zero exit status 128.",
+      "avg_ratio": null,
+      "avg_runtime_ms": null,
+      "results": [],
+      "rank": null
+    }
+  ]
 }

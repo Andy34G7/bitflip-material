@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-22T08:55:16.409381+00:00",
+  "generated_at": "2026-05-23T08:12:30.793815+00:00",
   "metric": "lower avg_ratio is better; avg_runtime_ms is tie-breaker",
   "datasets": [
     "small_repetitive",
@@ -10,7 +10,7 @@
     {
       "name": "example-alice",
       "status": "error",
-      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/alice-compressor', '/tmp/submission-repo-l8305kqp/repo']' returned non-zero exit status 128.",
+      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/alice-compressor', '/tmp/submission-repo-iapexltg/repo']' returned non-zero exit status 128.",
       "avg_ratio": null,
       "avg_runtime_ms": null,
       "results": [],
@@ -19,7 +19,7 @@
     {
       "name": "example-bob",
       "status": "error",
-      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/bob-compressor', '/tmp/submission-repo-fk80hrov/repo']' returned non-zero exit status 128.",
+      "error": "setup failed: Command '['git', 'clone', '--depth', '1', '--branch', 'main', 'https://github.com/example/bob-compressor', '/tmp/submission-repo-vouhbb3t/repo']' returned non-zero exit status 128.",
       "avg_ratio": null,
       "avg_runtime_ms": null,
       "results": [],
